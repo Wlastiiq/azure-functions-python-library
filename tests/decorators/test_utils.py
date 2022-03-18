@@ -19,6 +19,11 @@ class TestUtils(unittest.TestCase):
             utils.parse_singular_param_to_enum('STRING', DataType),
             DataType.STRING)
 
+    def test_parse_singular_lowercase_str_to_enum_str(self):
+        self.assertEqual(
+            utils.parse_singular_param_to_enum('string', DataType),
+            DataType.STRING)
+
     def test_parse_singular_enum_to_enum(self):
         self.assertEqual(
             utils.parse_singular_param_to_enum(DataType.STRING, DataType),
@@ -41,6 +46,11 @@ class TestUtils(unittest.TestCase):
     def test_parse_iterable_str_to_enums(self):
         self.assertEqual(
             utils.parse_iterable_param_to_enums(['GET', 'POST'], HttpMethod),
+            [HttpMethod.GET, HttpMethod.POST])
+
+    def test_parse_iterable_lowercase_str_to_enums(self):
+        self.assertEqual(
+            utils.parse_iterable_param_to_enums(['get', 'post'], HttpMethod),
             [HttpMethod.GET, HttpMethod.POST])
 
     def test_parse_iterable_enums_to_enums(self):
@@ -160,14 +170,19 @@ class TestUtils(unittest.TestCase):
     def test_add_to_dict_valid(self):
         class TestDict:
             @BuildDictMeta.add_to_dict
-            def dummy(self, arg1, arg2):
-                pass
+            def __init__(self, arg1, arg2, **kwargs):
+                self.arg1 = arg1
+                self.arg2 = arg2
 
-        test_obj = TestDict()
-        test_obj.dummy('val1', 'val2')
+        test_obj = TestDict('val1', 'val2', dummy1="dummy1", dummy2="dummy2")
 
-        self.assertEqual(getattr(test_obj, 'init_params'),
-                         ['self', 'arg1', 'arg2'])
+        self.assertCountEqual(getattr(test_obj, 'init_params'),
+                              {'self', 'arg1', 'arg2', 'kwargs', 'dummy1',
+                               'dummy2'})
+        self.assertEqual(getattr(test_obj, "arg1", None), "val1")
+        self.assertEqual(getattr(test_obj, "arg2", None), "val2")
+        self.assertEqual(getattr(test_obj, "dummy1", None), "dummy1")
+        self.assertEqual(getattr(test_obj, "dummy2", None), "dummy2")
 
     def test_build_dict_meta(self):
         class TestBuildDict(metaclass=BuildDictMeta):
@@ -182,6 +197,6 @@ class TestUtils(unittest.TestCase):
 
         test_obj = TestBuildDict('val1', 'val2')
 
-        self.assertEqual(getattr(test_obj, 'init_params'),
-                         ['self', 'arg1', 'arg2'])
+        self.assertCountEqual(getattr(test_obj, 'init_params'),
+                              {'self', 'arg1', 'arg2'})
         self.assertEqual(test_obj.get_dict_repr(), {"world": ["dummy"]})

@@ -11,7 +11,7 @@ from azure.functions.decorators.cosmosdb import CosmosDBTrigger, \
     CosmosDBOutput, CosmosDBInput
 from azure.functions.decorators.eventhub import EventHubTrigger, EventHubOutput
 from azure.functions.decorators.http import HttpTrigger, HttpOutput, \
-    HttpMethod
+    HttpMethod, is_http_trigger
 from azure.functions.decorators.queue import QueueTrigger, QueueOutput
 from azure.functions.decorators.servicebus import ServiceBusQueueTrigger, \
     ServiceBusQueueOutput, ServiceBusTopicTrigger, \
@@ -20,6 +20,8 @@ from azure.functions.decorators.timer import TimerTrigger
 from azure.functions.decorators.utils import parse_singular_param_to_enum, \
     parse_iterable_param_to_enums, StringifyEnumJsonEncoder
 from azure.functions.http import HttpRequest
+from .constants import HTTP_TRIGGER
+from .custom import CustomInputBinding, CustomTrigger, CustomOutputBinding
 from .._http_asgi import AsgiMiddleware
 from .._http_wsgi import WsgiMiddleware, Context
 
@@ -176,8 +178,9 @@ class FunctionBuilder(object):
                 f"Function {function_name} trigger {trigger} not present"
                 f" in bindings {bindings}")
 
-        if isinstance(trigger, HttpTrigger) and trigger.route is None:
-            trigger.route = self._function.get_function_name()
+        if is_http_trigger(trigger) and getattr(trigger, 'route',
+                                                None) is None:
+            setattr(trigger, 'route', self._function.get_function_name())
 
     def build(self) -> Function:
         self._validate_function()
@@ -297,7 +300,8 @@ class FunctionApp:
 
     def _add_http_app(self,
                       http_middleware: Union[AsgiMiddleware, WsgiMiddleware],
-                      app_kwargs: typing.Dict) -> None:
+                      app_kwargs: typing.Dict
+                      ) -> None:
         """Add a Wsgi or Asgi app integrated http function.
 
         :param http_middleware: :class:`AsgiMiddleware` or
@@ -496,7 +500,8 @@ class FunctionApp:
                                 data_type: Optional[
                                     Union[DataType, str]] = None,
                                 access_rights: Optional[Union[
-                                    AccessRights, str]] = None) -> Callable:
+                                    AccessRights, str]] = None) -> \
+            Callable:
         """The write_service_bus_queue decorator adds
         :class:`ServiceBusQueueOutput` to the :class:`FunctionBuilder` object
         for building :class:`Function` object used in worker function
@@ -604,7 +609,8 @@ class FunctionApp:
                                 data_type: Optional[
                                     Union[DataType, str]] = None,
                                 access_rights: Optional[Union[
-                                    AccessRights, str]] = None) -> Callable:
+                                    AccessRights, str]] = None) -> \
+            Callable:
         """The write_service_bus_topic decorator adds
         :class:`ServiceBusTopicOutput` to the :class:`FunctionBuilder` object
         for building :class:`Function` object used in worker function
@@ -787,7 +793,8 @@ class FunctionApp:
                                 connection: str,
                                 event_hub_name: str,
                                 data_type: Optional[
-                                    Union[DataType, str]] = None) -> Callable:
+                                    Union[DataType, str]] = None) -> \
+            Callable:
         """The write_event_hub_message decorator adds
         :class:`EventHubOutput` to the :class:`FunctionBuilder` object
         for building :class:`Function` object used in worker function
@@ -1199,6 +1206,81 @@ class FunctionApp:
                         connection=connection,
                         data_type=parse_singular_param_to_enum(data_type,
                                                                DataType)))
+                return fb
+
+            return decorator()
+
+        return wrap
+
+    def custom_input_binding(self,
+                             arg_name: str,
+                             type: str,
+                             data_type: Optional[Union[DataType, str]] = None,
+                             **kwargs
+                             ) -> Callable:
+
+        @self._configure_function_builder
+        def wrap(fb):
+            def decorator():
+                fb.add_binding(
+                    binding=CustomInputBinding(
+                        name=arg_name,
+                        type=type,
+                        data_type=parse_singular_param_to_enum(data_type,
+                                                               DataType),
+                        **kwargs))
+                return fb
+
+            return decorator()
+
+        return wrap
+
+    def custom_output_binding(self,
+                              arg_name: str,
+                              type: str,
+                              data_type: Optional[Union[DataType, str]] = None,
+                              **kwargs
+                              ) -> Callable:
+
+        @self._configure_function_builder
+        def wrap(fb):
+            def decorator():
+                fb.add_binding(
+                    binding=CustomOutputBinding(
+                        name=arg_name,
+                        type=type,
+                        data_type=parse_singular_param_to_enum(data_type,
+                                                               DataType),
+                        **kwargs))
+                return fb
+
+            return decorator()
+
+        return wrap
+
+    def custom_trigger(self,
+                       arg_name: str,
+                       type: str,
+                       data_type: Optional[Union[DataType, str]] = None,
+                       **kwargs
+                       ) -> Callable:
+
+        @self._configure_function_builder
+        def wrap(fb):
+            def decorator():
+                nonlocal kwargs
+                if type == HTTP_TRIGGER:
+                    if kwargs.get('auth_level', None) is None:
+                        kwargs['auth_level'] = self.auth_level
+                    if 'route' not in kwargs:
+                        kwargs['route'] = None
+                fb.add_trigger(
+                    trigger=CustomTrigger(
+                        name=arg_name,
+                        type=type,
+                        data_type=parse_singular_param_to_enum(data_type,
+                                                               DataType),
+                        **kwargs))
                 return fb
 
             return decorator()

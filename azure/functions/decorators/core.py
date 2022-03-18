@@ -73,6 +73,8 @@ class Binding(ABC):
     attribute in function.json when new binding classes are created.
     Ref: https://aka.ms/azure-function-binding-http """
 
+    EXCLUDED_INIT_PARAMS = {'self', 'kwargs', 'type', 'data_type', 'direction'}
+
     @staticmethod
     @abstractmethod
     def get_binding_name() -> str:
@@ -80,10 +82,8 @@ class Binding(ABC):
 
     def __init__(self, name: str,
                  direction: BindingDirection,
-                 is_trigger: bool,
                  data_type: Optional[DataType] = None):
         self.type = self.get_binding_name()
-        self.is_trigger = is_trigger
         self.name = name
         self._direction = direction
         self._data_type = data_type
@@ -111,7 +111,7 @@ class Binding(ABC):
         :return: Dictionary representation of the binding.
         """
         for p in getattr(self, 'init_params', []):
-            if p not in ['data_type', 'self']:
+            if p not in Binding.EXCLUDED_INIT_PARAMS:
                 self._dict[to_camel_case(p)] = getattr(self, p, None)
 
         return self._dict
@@ -121,24 +121,27 @@ class Trigger(Binding, ABC, metaclass=ABCBuildDictMeta):
     """Class representation of Azure Function Trigger. \n
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
+
     def __init__(self, name, data_type) -> None:
         super().__init__(direction=BindingDirection.IN,
-                         name=name, data_type=data_type, is_trigger=True)
+                         name=name, data_type=data_type)
 
 
 class InputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
     """Class representation of Azure Function Input Binding. \n
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
+
     def __init__(self, name, data_type) -> None:
         super().__init__(direction=BindingDirection.IN,
-                         name=name, data_type=data_type, is_trigger=False)
+                         name=name, data_type=data_type)
 
 
 class OutputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
     """Class representation of Azure Function Output Binding. \n
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
+
     def __init__(self, name, data_type) -> None:
         super().__init__(direction=BindingDirection.OUT,
-                         name=name, data_type=data_type, is_trigger=False)
+                         name=name, data_type=data_type)

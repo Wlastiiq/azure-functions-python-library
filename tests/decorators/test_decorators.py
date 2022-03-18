@@ -861,6 +861,8 @@ class TestFunctionsApp(unittest.TestCase):
 
         func = self._get_func(app)
 
+        bindings = func.get_bindings()
+        self.assertEqual(len(bindings), 1)
         trigger = func.get_bindings()[0]
 
         self.assertEqual(trigger.get_dict_repr(), {
@@ -886,9 +888,22 @@ class TestFunctionsApp(unittest.TestCase):
 
         func = self._get_func(app)
 
-        trigger = func.get_bindings()[0]
+        bindings = func.get_bindings()
+        self.assertEqual(len(bindings), 2)
+
+        input_binding = bindings[0]
+        trigger = bindings[1]
 
         self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "dataType": DataType.STRING,
+            "type": BLOB_TRIGGER,
+            "name": "req",
+            "path": "dummy_path",
+            "connection": "dummy_conn"
+        })
+
+        self.assertEqual(input_binding.get_dict_repr(), {
             "direction": BindingDirection.IN,
             "dataType": DataType.STRING,
             "type": BLOB,
@@ -911,9 +926,193 @@ class TestFunctionsApp(unittest.TestCase):
 
         func = self._get_func(app)
 
+        bindings = func.get_bindings()
+        self.assertEqual(len(bindings), 2)
+
+        output_binding = bindings[0]
+        trigger = bindings[1]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "dataType": DataType.STRING,
+            "type": BLOB_TRIGGER,
+            "name": "req",
+            "path": "dummy_path",
+            "connection": "dummy_conn"
+        })
+
+        self.assertEqual(output_binding.get_dict_repr(), {
+            "direction": BindingDirection.OUT,
+            "dataType": DataType.STRING,
+            "type": BLOB,
+            "name": "out",
+            "path": "dummy_out_path",
+            "connection": "dummy_out_conn"
+        })
+
+    # mix, asgi/wsgi
+
+    def test_custom_trigger(self):
+        app = self.func_app
+
+        @app.custom_trigger(arg_name="req", type=BLOB_TRIGGER,
+                            data_type=DataType.BINARY, connection="dummy_conn",
+                            path="dummy_path")
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
+        bindings = func.get_bindings()
+        self.assertEqual(len(bindings), 1)
+
+        trigger = bindings[0]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "dataType": DataType.BINARY,
+            "type": BLOB_TRIGGER,
+            "name": "req",
+            "path": "dummy_path",
+            "connection": "dummy_conn"
+        })
+
+    def test_custom_input_binding(self):
+        app = self.func_app
+
+        @app.custom_trigger(arg_name="req", type=TIMER_TRIGGER,
+                            data_type=DataType.BINARY,
+                            schedule="dummy_schedule")
+        @app.custom_input_binding(arg_name="file", type=BLOB,
+                                  path="dummy_in_path",
+                                  connection="dummy_in_conn",
+                                  data_type=DataType.STRING)
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
+        bindings = func.get_bindings()
+        self.assertEqual(len(bindings), 2)
+
+        input_binding = bindings[0]
+        trigger = bindings[1]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "dataType": DataType.BINARY,
+            "type": TIMER_TRIGGER,
+            "name": "req",
+            "schedule": "dummy_schedule"
+        })
+
+        self.assertEqual(input_binding.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "dataType": DataType.STRING,
+            "type": BLOB,
+            "name": "file",
+            "path": "dummy_in_path",
+            "connection": "dummy_in_conn"
+        })
+
+    def test_custom_output_binding(self):
+        app = self.func_app
+
+        @app.custom_trigger(arg_name="req", type=QUEUE_TRIGGER,
+                            queue_name="dummy_queue",
+                            connection="dummy_conn")
+        @app.custom_output_binding(arg_name="out", type=BLOB,
+                                   path="dummy_out_path",
+                                   connection="dummy_out_conn",
+                                   data_type=DataType.STRING)
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
+        output_binding = func.get_bindings()[0]
+        trigger = func.get_bindings()[1]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "type": QUEUE_TRIGGER,
+            "name": "req",
+            "queueName": "dummy_queue",
+            "connection": "dummy_conn"
+        })
+
+        self.assertEqual(output_binding.get_dict_repr(), {
+            "direction": BindingDirection.OUT,
+            "dataType": DataType.STRING,
+            "type": BLOB,
+            "name": "out",
+            "path": "dummy_out_path",
+            "connection": "dummy_out_conn"
+        })
+
+    def test_custom_http_trigger(self):
+        app = self.func_app
+
+        @app.custom_trigger(arg_name="req", type=HTTP_TRIGGER)
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
         trigger = func.get_bindings()[0]
 
         self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "type": HTTP_TRIGGER,
+            "name": "req",
+            "route": "dummy",
+            "authLevel": AuthLevel.FUNCTION
+        })
+
+    def test_custom_binding_with_excluded_params(self):
+        app = self.func_app
+
+        @app.custom_trigger(arg_name="req", type=QUEUE_TRIGGER,
+                            direction=BindingDirection.INOUT)
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
+        trigger = func.get_bindings()[0]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "type": QUEUE_TRIGGER,
+            "name": "req"
+        })
+
+    def test_mixed_custom_and_supported_binding(self):
+        app = self.func_app
+
+        @app.on_queue_change(arg_name="req", queue_name="dummy_queue",
+                             connection="dummy_conn")
+        @app.custom_output_binding(arg_name="out", type=BLOB,
+                                   path="dummy_out_path",
+                                   connection="dummy_out_conn",
+                                   data_type=DataType.STRING)
+        def dummy():
+            pass
+
+        func = self._get_func(app)
+
+        output_binding = func.get_bindings()[0]
+        trigger = func.get_bindings()[1]
+
+        self.assertEqual(trigger.get_dict_repr(), {
+            "direction": BindingDirection.IN,
+            "type": QUEUE_TRIGGER,
+            "name": "req",
+            "queueName": "dummy_queue",
+            "connection": "dummy_conn"
+        })
+
+        self.assertEqual(output_binding.get_dict_repr(), {
             "direction": BindingDirection.OUT,
             "dataType": DataType.STRING,
             "type": BLOB,

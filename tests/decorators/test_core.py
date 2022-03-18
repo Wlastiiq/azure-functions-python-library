@@ -14,7 +14,8 @@ class DummyTrigger(Trigger):
 
     def __init__(self,
                  name: str,
-                 data_type: DataType = DataType.UNDEFINED):
+                 data_type: DataType = DataType.UNDEFINED,
+                 **kwargs):
         super().__init__(name=name, data_type=data_type)
 
 
@@ -25,7 +26,8 @@ class DummyInputBinding(InputBinding):
 
     def __init__(self,
                  name: str,
-                 data_type: DataType = DataType.UNDEFINED):
+                 data_type: DataType = DataType.UNDEFINED,
+                 **kwargs):
         super().__init__(name=name, data_type=data_type)
 
 
@@ -36,7 +38,8 @@ class DummyOutputBinding(OutputBinding):
 
     def __init__(self,
                  name: str,
-                 data_type: DataType = DataType.UNDEFINED):
+                 data_type: DataType = DataType.UNDEFINED,
+                 **kwargs):
         super().__init__(name=name, data_type=data_type)
 
 
@@ -46,7 +49,18 @@ class TestBindings(unittest.TestCase):
         """
         test_trigger = DummyTrigger(name="dummy", data_type=DataType.UNDEFINED)
 
-        self.assertTrue(test_trigger.is_trigger)
+        expected_dict = {'dataType': DataType.UNDEFINED,
+                         'direction': BindingDirection.IN,
+                         'name': 'dummy',
+                         'type': 'Dummy'}
+        self.assertEqual(test_trigger.get_binding_name(), "Dummy")
+        self.assertEqual(test_trigger.get_dict_repr(), expected_dict)
+
+    def test_param_direction_unset(self):
+        """Testing if the trigger creation sets the correct values by default
+        """
+        test_trigger = DummyTrigger(name="dummy", data_type=DataType.UNDEFINED,
+                                    direction="dummy", type="hello")
 
         expected_dict = {'dataType': DataType.UNDEFINED,
                          'direction': BindingDirection.IN,
@@ -67,7 +81,6 @@ class TestBindings(unittest.TestCase):
                          'type': 'DummyInputBinding'}
 
         self.assertEqual(test_input.get_binding_name(), "DummyInputBinding")
-        self.assertFalse(test_input.is_trigger)
         self.assertEqual(test_input.get_dict_repr(), expected_dict)
 
     def test_output_creation(self):
@@ -82,5 +95,4 @@ class TestBindings(unittest.TestCase):
                          'type': 'DummyOutputBinding'}
 
         self.assertEqual(test_output.get_binding_name(), "DummyOutputBinding")
-        self.assertFalse(test_output.is_trigger)
         self.assertEqual(test_output.get_dict_repr(), expected_dict)
