@@ -91,7 +91,7 @@ class TestFunctionsApp(unittest.TestCase):
 
         @app.schedule(arg_name="req", schedule="dummy_schedule",
                       run_on_startup=False, use_monitor=False,
-                      data_type=DataType.STRING)
+                      data_type=DataType.STRING, dummy_field='dummy')
         def dummy():
             pass
 
@@ -104,6 +104,7 @@ class TestFunctionsApp(unittest.TestCase):
                     "type": TIMER_TRIGGER,
                     "dataType": DataType.STRING,
                     "direction": BindingDirection.IN,
+                    'dummyField': 'dummy',
                     "schedule": "dummy_schedule",
                     "runOnStartup": False,
                     "useMonitor": False
@@ -144,7 +145,9 @@ class TestFunctionsApp(unittest.TestCase):
                    trigger_arg_data_type=DataType.STRING,
                    output_arg_data_type=DataType.STRING,
                    methods=(HttpMethod.GET, HttpMethod.PATCH),
-                   auth_level=AuthLevel.FUNCTION, route='dummy_route')
+                   auth_level=AuthLevel.FUNCTION, route='dummy_route',
+                   trigger_extra_fields={"dummy_field": "dummy"},
+                   binding_extra_fields={"dummy_field": "dummy"})
         def dummy():
             pass
 
@@ -154,6 +157,7 @@ class TestFunctionsApp(unittest.TestCase):
             "bindings": [
                 {
                     "direction": BindingDirection.IN,
+                    'dummyField': 'dummy',
                     "type": HTTP_TRIGGER,
                     "dataType": DataType.STRING,
                     "name": "trigger_name",
@@ -165,6 +169,7 @@ class TestFunctionsApp(unittest.TestCase):
                 },
                 {
                     "direction": BindingDirection.OUT,
+                    'dummyField': 'dummy',
                     "dataType": DataType.STRING,
                     "type": HTTP_OUTPUT,
                     "name": "out",
@@ -206,10 +211,10 @@ class TestFunctionsApp(unittest.TestCase):
 
         @app.on_queue_change(arg_name="req", queue_name="dummy_queue",
                              connection="dummy_conn",
-                             data_type=DataType.STRING)
+                             data_type=DataType.STRING, dummy_field="dummy")
         @app.write_queue(arg_name="out", queue_name="dummy_out_queue",
                          connection="dummy_out_conn",
-                         data_type=DataType.STRING)
+                         data_type=DataType.STRING, dummy_field="dummy")
         def dummy():
             pass
 
@@ -219,6 +224,7 @@ class TestFunctionsApp(unittest.TestCase):
                                  "bindings": [
                                      {
                                          "direction": BindingDirection.OUT,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STRING,
                                          "type": QUEUE,
                                          "name": "out",
@@ -227,6 +233,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      },
                                      {
                                          "direction": BindingDirection.IN,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STRING,
                                          "type": QUEUE_TRIGGER,
                                          "name": "req",
@@ -276,12 +283,14 @@ class TestFunctionsApp(unittest.TestCase):
                                          data_type=DataType.STREAM,
                                          access_rights=AccessRights.MANAGE,
                                          is_sessions_enabled=True,
-                                         cardinality=Cardinality.MANY)
+                                         cardinality=Cardinality.MANY,
+                                         dummy_field="dummy")
         @app.write_service_bus_queue(arg_name='res',
                                      connection='dummy_out_conn',
                                      queue_name='dummy_out_queue',
                                      data_type=DataType.STREAM,
-                                     access_rights=AccessRights.MANAGE)
+                                     access_rights=AccessRights.MANAGE,
+                                     dummy_field="dummy")
         def dummy():
             pass
 
@@ -291,6 +300,7 @@ class TestFunctionsApp(unittest.TestCase):
                                  "bindings": [
                                      {
                                          "direction": BindingDirection.OUT,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STREAM,
                                          "type": SERVICE_BUS,
                                          "name": "res",
@@ -300,6 +310,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      },
                                      {
                                          "direction": BindingDirection.IN,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STREAM,
                                          "type": SERVICE_BUS_TRIGGER,
                                          "name": "req",
@@ -358,12 +369,14 @@ class TestFunctionsApp(unittest.TestCase):
                                          data_type=DataType.STRING,
                                          access_rights=AccessRights.LISTEN,
                                          is_sessions_enabled=False,
-                                         cardinality=Cardinality.MANY)
+                                         cardinality=Cardinality.MANY,
+                                         dummy_field="dummy")
         @app.write_service_bus_topic(arg_name='res', connection='dummy_conn',
                                      topic_name='dummy_topic',
                                      subscription_name='dummy_sub',
                                      data_type=DataType.STRING,
-                                     access_rights=AccessRights.LISTEN)
+                                     access_rights=AccessRights.LISTEN,
+                                     dummy_field="dummy")
         def dummy():
             pass
 
@@ -374,6 +387,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      {
                                          "type": SERVICE_BUS,
                                          "direction": BindingDirection.OUT,
+                                         'dummyField': 'dummy',
                                          "name": "res",
                                          "connection": "dummy_conn",
                                          "topicName": "dummy_topic",
@@ -384,6 +398,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      {
                                          "type": SERVICE_BUS_TRIGGER,
                                          "direction": BindingDirection.IN,
+                                         'dummyField': 'dummy',
                                          "name": "req",
                                          "connection": "dummy_conn",
                                          "topicName": "dummy_topic",
@@ -437,11 +452,13 @@ class TestFunctionsApp(unittest.TestCase):
                                   event_hub_name="dummy_event_hub",
                                   cardinality=Cardinality.ONE,
                                   consumer_group="dummy_group",
-                                  data_type=DataType.UNDEFINED)
+                                  data_type=DataType.UNDEFINED,
+                                  dummy_field="dummy")
         @app.write_event_hub_message(arg_name="res",
                                      event_hub_name="dummy_event_hub",
                                      connection="dummy_connection",
-                                     data_type=DataType.UNDEFINED)
+                                     data_type=DataType.UNDEFINED,
+                                     dummy_field="dummy")
         def dummy():
             pass
 
@@ -452,6 +469,7 @@ class TestFunctionsApp(unittest.TestCase):
             "bindings": [
                 {
                     "direction": BindingDirection.OUT,
+                    'dummyField': 'dummy',
                     "dataType": DataType.UNDEFINED,
                     "type": EVENT_HUB,
                     "name": "res",
@@ -460,6 +478,7 @@ class TestFunctionsApp(unittest.TestCase):
                 },
                 {
                     "direction": BindingDirection.IN,
+                    'dummyField': 'dummy',
                     "dataType": DataType.UNDEFINED,
                     "type": EVENT_HUB_TRIGGER,
                     "name": "req",
@@ -494,7 +513,8 @@ class TestFunctionsApp(unittest.TestCase):
             start_from_beginning=False,
             create_lease_collection_if_not_exists=False,
             preferred_locations="dummy_loc",
-            data_type=DataType.STRING)
+            data_type=DataType.STRING,
+            dummy_field="dummy")
         @app.read_cosmos_db_documents(arg_name="in",
                                       database_name="dummy_in_db",
                                       collection_name="dummy_in_collection",
@@ -502,7 +522,8 @@ class TestFunctionsApp(unittest.TestCase):
                                       id="dummy_id",
                                       sql_query="dummy_query",
                                       partition_key="dummy_partitions",
-                                      data_type=DataType.STRING)
+                                      data_type=DataType.STRING,
+                                      dummy_field="dummy")
         @app.write_cosmos_db_documents(arg_name="out",
                                        database_name="dummy_out_db",
                                        collection_name="dummy_out_collection",
@@ -512,7 +533,8 @@ class TestFunctionsApp(unittest.TestCase):
                                        collection_throughput=1,
                                        use_multiple_write_locations=False,
                                        preferred_locations="dummy_location",
-                                       data_type=DataType.STRING)
+                                       data_type=DataType.STRING,
+                                       dummy_field="dummy")
         def dummy():
             pass
 
@@ -522,6 +544,7 @@ class TestFunctionsApp(unittest.TestCase):
                                  "bindings": [
                                      {
                                          "direction": BindingDirection.OUT,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STRING,
                                          "type": COSMOS_DB,
                                          "name": "out",
@@ -539,6 +562,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      },
                                      {
                                          "direction": BindingDirection.IN,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STRING,
                                          "type": COSMOS_DB,
                                          "name": "in",
@@ -553,6 +577,7 @@ class TestFunctionsApp(unittest.TestCase):
                                      },
                                      {
                                          "direction": BindingDirection.IN,
+                                         'dummyField': 'dummy',
                                          "dataType": DataType.STRING,
                                          "type": COSMOS_DB_TRIGGER,
                                          "name": "trigger",

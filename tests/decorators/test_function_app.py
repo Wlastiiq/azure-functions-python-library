@@ -285,7 +285,12 @@ class TestFunctionApp(unittest.TestCase):
                                       "trigger_arg_data_type":
                                           DataType.UNDEFINED,
                                       "output_arg_data_type":
-                                          DataType.UNDEFINED})
+                                          DataType.UNDEFINED,
+                                      "trigger_extra_fields":
+                                          {'dummyField': 'dummy'},
+                                      "binding_extra_fields":
+                                          {'dummyField': 'dummy'}
+                                      })
         funcs = app.get_functions()
         self.assertEqual(len(funcs), 1)
         func = funcs[0]
@@ -296,18 +301,16 @@ class TestFunctionApp(unittest.TestCase):
         raw_trigger = raw_bindings[0]
         raw_output_binding = raw_bindings[0]
 
-        # self.assertEqual(json.load(raw_trigger), "")
         self.assertEqual(json.loads(raw_trigger),
                          json.loads(
                              '{"direction": "IN", "dataType": "UNDEFINED", '
-                             '"type": "httpTrigger", "authLevel": '
-                             '"ANONYMOUS", "route": "/{*route}", "name": '
-                             '"req", "methods": ["GET"]}'))
-        # self.assertEqual(json.load(raw_output_binding), "")
+                             '"type": "httpTrigger", "name": "req", "route": '
+                             '"/{*route}", "dummyField": "dummy", "methods": '
+                             '["GET"], "authLevel": "ANONYMOUS"}'))
         self.assertEqual(json.loads(raw_output_binding), json.loads(
             '{"direction": "IN", "dataType": "UNDEFINED", "type": '
-            '"httpTrigger", "route": "/{*route}", "methods": ["GET"], '
-            '"name": "req", "authLevel": "ANONYMOUS"}'))
+            '"httpTrigger", "dummyField": "dummy", "name": "req", "route": '
+            '"/{*route}", "authLevel": "ANONYMOUS", "methods": ["GET"]}'))
 
         self.assertEqual(func.get_bindings_dict(), {
             "bindings": [
@@ -315,6 +318,7 @@ class TestFunctionApp(unittest.TestCase):
                     "authLevel": AuthLevel.ANONYMOUS,
                     "dataType": DataType.UNDEFINED,
                     "direction": BindingDirection.IN,
+                    'dummyField': 'dummy',
                     "methods": [HttpMethod.GET],
                     "name": "req",
                     "route": "/{*route}",
@@ -323,6 +327,7 @@ class TestFunctionApp(unittest.TestCase):
                 {
                     "dataType": DataType.UNDEFINED,
                     "direction": BindingDirection.OUT,
+                    'dummyField': 'dummy',
                     "name": "$return",
                     "type": HTTP_OUTPUT
                 }
