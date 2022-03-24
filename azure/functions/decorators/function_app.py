@@ -1218,7 +1218,27 @@ class FunctionApp:
                              data_type: Optional[Union[DataType, str]] = None,
                              **kwargs
                              ) -> Callable:
+        """
+        The custom_input_binding decorator adds :class:`CustomInputBinding`
+        to the :class:`FunctionBuilder` object for building :class:`Function`
+        object used in worker function indexing model.
+        This is equivalent to defining a custom input binding in the
+        function.json which enables function to read data from a
+        custom defined input source.
+        All optional fields will be given default value by function host when
+        they are parsed by function host.
 
+        Ref: https://aka.ms/azure-function-binding-custom
+
+        :param arg_name: The name of input parameter in the function code.
+        :param type: The type of binding.
+        :param data_type: Defines how Functions runtime should treat the
+         parameter value.
+        :param kwargs: Keyword arguments for specifying additional binding
+        fields to include in the binding json.
+
+        :return: Decorator function.
+        """
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
@@ -1241,6 +1261,27 @@ class FunctionApp:
                               data_type: Optional[Union[DataType, str]] = None,
                               **kwargs
                               ) -> Callable:
+        """
+        The custom_output_binding decorator adds :class:`CustomOutputBinding`
+        to the :class:`FunctionBuilder` object for building :class:`Function`
+        object used in worker function indexing model.
+        This is equivalent to defining a custom output binding in the
+        function.json which enables function to write data from a
+        custom defined output source.
+        All optional fields will be given default value by function host when
+        they are parsed by function host.
+
+        Ref: https://aka.ms/azure-function-binding-custom
+
+        :param arg_name: The name of output parameter in the function code.
+        :param type: The type of binding.
+        :param data_type: Defines how Functions runtime should treat the
+         parameter value.
+        :param kwargs: Keyword arguments for specifying additional binding
+        fields to include in the binding json.
+
+        :return: Decorator function.
+        """
 
         @self._configure_function_builder
         def wrap(fb):
@@ -1264,6 +1305,27 @@ class FunctionApp:
                        data_type: Optional[Union[DataType, str]] = None,
                        **kwargs
                        ) -> Callable:
+        """
+        The custom_trigger decorator adds :class:`CustomTrigger`
+        to the :class:`FunctionBuilder` object for building :class:`Function`
+        object used in worker function indexing model.
+        This is equivalent to defining a custom trigger in the
+        function.json which triggers function to execute when custom trigger
+        events are received by host.
+        All optional fields will be given default value by function host when
+        they are parsed by function host.
+
+        Ref: https://aka.ms/azure-function-binding-custom
+
+        :param arg_name: The name of trigger parameter in the function code.
+        :param type: The type of binding.
+        :param data_type: Defines how Functions runtime should treat the
+         parameter value.
+        :param kwargs: Keyword arguments for specifying additional binding
+        fields to include in the binding json.
+
+        :return: Decorator function.
+        """
 
         @self._configure_function_builder
         def wrap(fb):
