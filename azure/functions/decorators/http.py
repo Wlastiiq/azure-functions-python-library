@@ -46,8 +46,3 @@ class HttpOutput(OutputBinding):
                  data_type: Optional[DataType] = None,
                  **kwargs) -> None:
         super().__init__(name=name, data_type=data_type)
-
-
-def is_http_trigger(trigger):
-    return isinstance(trigger, HttpTrigger) or \
-        trigger.get_binding_name() == HTTP_TRIGGER

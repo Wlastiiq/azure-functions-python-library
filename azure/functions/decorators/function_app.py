@@ -6,12 +6,13 @@ from typing import Callable, Dict, List, Optional, Union, Iterable
 
 from azure.functions.decorators.blob import BlobTrigger, BlobInput, BlobOutput
 from azure.functions.decorators.core import Binding, Trigger, DataType, \
-    AuthLevel, SCRIPT_FILE_NAME, Cardinality, AccessRights
+    AuthLevel, SCRIPT_FILE_NAME, Cardinality, AccessRights, \
+    is_supported_trigger_type
 from azure.functions.decorators.cosmosdb import CosmosDBTrigger, \
     CosmosDBOutput, CosmosDBInput
 from azure.functions.decorators.eventhub import EventHubTrigger, EventHubOutput
 from azure.functions.decorators.http import HttpTrigger, HttpOutput, \
-    HttpMethod, is_http_trigger
+    HttpMethod
 from azure.functions.decorators.queue import QueueTrigger, QueueOutput
 from azure.functions.decorators.servicebus import ServiceBusQueueTrigger, \
     ServiceBusQueueOutput, ServiceBusTopicTrigger, \
@@ -178,8 +179,9 @@ class FunctionBuilder(object):
                 f"Function {function_name} trigger {trigger} not present"
                 f" in bindings {bindings}")
 
-        if is_http_trigger(trigger) and getattr(trigger, 'route',
-                                                None) is None:
+        # Set route to function name if unspecified in the http trigger
+        if is_supported_trigger_type(trigger, HttpTrigger) \
+                and getattr(trigger, 'route', None) is None:
             setattr(trigger, 'route', self._function.get_function_name())
 
     def build(self) -> Function:
@@ -369,9 +371,11 @@ class FunctionApp:
         on the request in order to invoke the function.
         :return: Decorator function.
         :param trigger_extra_fields: Additional fields to include in trigger
-        json.
+        json. For example,
+        >>> data_type='STRING' # 'dataType': 'STRING' in trigger json
         :param binding_extra_fields: Additional fields to include in binding
-        json.
+        json. For example,
+        >>> data_type='STRING' # 'dataType': 'STRING' in binding json
         """
 
         @self._configure_function_builder

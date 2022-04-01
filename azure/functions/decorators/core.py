@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
 
-from azure.functions.decorators.utils import to_camel_case, \
+from .utils import to_camel_case, \
     ABCBuildDictMeta, StringifyEnum
 
 SCRIPT_FILE_NAME = "function_app.py"
@@ -145,3 +145,8 @@ class OutputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
     def __init__(self, name, data_type) -> None:
         super().__init__(direction=BindingDirection.OUT,
                          name=name, data_type=data_type)
+
+
+def is_supported_trigger_type(trigger: Trigger, trigger_type: Type[Trigger]):
+    return isinstance(trigger, trigger_type) or \
+        trigger.get_binding_name() == trigger_type.get_binding_name()

@@ -5,9 +5,8 @@ import unittest
 from azure.functions.decorators.constants import HTTP_TRIGGER, HTTP_OUTPUT
 from azure.functions.decorators.core import BindingDirection, DataType, \
     AuthLevel
-from azure.functions.decorators.custom import CustomTrigger
 from azure.functions.decorators.http import HttpTrigger, HttpOutput, \
-    HttpMethod, is_http_trigger
+    HttpMethod
 
 
 class TestHttp(unittest.TestCase):
@@ -49,14 +48,3 @@ class TestHttp(unittest.TestCase):
             "name": "req",
             "dataType": DataType.UNDEFINED,
         })
-
-    def test_is_http_trigger_binding_name(self):
-        self.assertTrue(
-            is_http_trigger(CustomTrigger(name='req', type=HTTP_TRIGGER)))
-
-    def test_is_http_trigger_instance(self):
-        self.assertTrue(is_http_trigger(HttpTrigger(name='req')))
-
-    def test_is_not_http_trigger(self):
-        self.assertFalse(
-            is_http_trigger(CustomTrigger(name='req', type="dummy")))
