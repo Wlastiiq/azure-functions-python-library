@@ -45,8 +45,6 @@ class DummyOutputBinding(OutputBinding):
 
 class TestBindings(unittest.TestCase):
     def test_trigger_creation(self):
-        """Testing if the trigger creation sets the correct values by default
-        """
         test_trigger = DummyTrigger(name="dummy", data_type=DataType.UNDEFINED)
 
         expected_dict = {'dataType': DataType.UNDEFINED,
@@ -57,8 +55,6 @@ class TestBindings(unittest.TestCase):
         self.assertEqual(test_trigger.get_dict_repr(), expected_dict)
 
     def test_param_direction_unset(self):
-        """Testing if the trigger creation sets the correct values by default
-        """
         test_trigger = DummyTrigger(name="dummy", data_type=DataType.UNDEFINED,
                                     direction="dummy", type="hello")
 
@@ -70,8 +66,6 @@ class TestBindings(unittest.TestCase):
         self.assertEqual(test_trigger.get_dict_repr(), expected_dict)
 
     def test_input_creation(self):
-        """Testing if the input creation sets the correct values by default
-        """
         test_input = DummyInputBinding(name="dummy",
                                        data_type=DataType.UNDEFINED)
 
@@ -84,8 +78,6 @@ class TestBindings(unittest.TestCase):
         self.assertEqual(test_input.get_dict_repr(), expected_dict)
 
     def test_output_creation(self):
-        """Testing if the output creation sets the correct values by default
-        """
         test_output = DummyOutputBinding(name="dummy",
                                          data_type=DataType.UNDEFINED)
 

@@ -302,8 +302,7 @@ class FunctionApp:
 
     def _add_http_app(self,
                       http_middleware: Union[AsgiMiddleware, WsgiMiddleware],
-                      app_kwargs: typing.Dict
-                      ) -> None:
+                      app_kwargs: typing.Dict) -> None:
         """Add a Wsgi or Asgi app integrated http function.
 
         :param http_middleware: :class:`AsgiMiddleware` or

@@ -82,8 +82,10 @@ class Binding(ABC):
 
     def __init__(self, name: str,
                  direction: BindingDirection,
-                 data_type: Optional[DataType] = None):
-        self.type = self.get_binding_name()
+                 data_type: Optional[DataType] = None,
+                 type: Optional[str] = None):  # NoQa
+        self.type = self.get_binding_name() \
+            if self.get_binding_name() is not None else type
         self.name = name
         self._direction = direction
         self._data_type = data_type
@@ -122,9 +124,10 @@ class Trigger(Binding, ABC, metaclass=ABCBuildDictMeta):
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
 
-    def __init__(self, name, data_type) -> None:
+    def __init__(self, name: str, data_type: Optional[DataType] = None,
+                 type: Optional[str] = None) -> None:
         super().__init__(direction=BindingDirection.IN,
-                         name=name, data_type=data_type)
+                         name=name, data_type=data_type, type=type)
 
 
 class InputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
@@ -132,9 +135,10 @@ class InputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
 
-    def __init__(self, name, data_type) -> None:
+    def __init__(self, name: str, data_type: Optional[DataType] = None,
+                 type: Optional[str] = None) -> None:
         super().__init__(direction=BindingDirection.IN,
-                         name=name, data_type=data_type)
+                         name=name, data_type=data_type, type=type)
 
 
 class OutputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
@@ -142,11 +146,14 @@ class OutputBinding(Binding, ABC, metaclass=ABCBuildDictMeta):
     Ref: https://aka.ms/functions-triggers-bindings-overview
     """
 
-    def __init__(self, name, data_type) -> None:
+    def __init__(self, name: str, data_type: Optional[DataType] = None,
+                 type: Optional[str] = None) -> None:
         super().__init__(direction=BindingDirection.OUT,
-                         name=name, data_type=data_type)
+                         name=name, data_type=data_type, type=type)
 
 
-def is_supported_trigger_type(trigger: Trigger, trigger_type: Type[Trigger]):
-    return isinstance(trigger, trigger_type) or \
-        trigger.get_binding_name() == trigger_type.get_binding_name()
+def is_supported_trigger_type(trigger_instance: Trigger,
+                              trigger_type: Type[Trigger]):
+    return isinstance(trigger_instance,
+                      trigger_type) or \
+        trigger_instance.type == trigger_type.get_binding_name()

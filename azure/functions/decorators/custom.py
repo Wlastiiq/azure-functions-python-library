@@ -7,51 +7,43 @@ from azure.functions.decorators.core import Trigger, \
 
 
 class CustomInputBinding(InputBinding):
-    binding_name: str = ""
 
     @staticmethod
     def get_binding_name() -> str:
-        return CustomInputBinding.binding_name
+        pass
 
     def __init__(self,
                  name: str,
                  type: str,
                  data_type: Optional[DataType] = None,
                  **kwargs):
-        self.type = type
-        CustomInputBinding.binding_name = type
-        super().__init__(name=name, data_type=data_type)
+        super().__init__(name=name, data_type=data_type, type=type)
 
 
 class CustomOutputBinding(OutputBinding):
-    binding_name: str = ""
+    # binding_name: str = ""
 
     @staticmethod
     def get_binding_name() -> str:
-        return CustomOutputBinding.binding_name
+        pass
 
     def __init__(self,
                  name: str,
                  type: str,
                  data_type: Optional[DataType] = None,
                  **kwargs):
-        self.type = type
-        CustomOutputBinding.binding_name = type
-        super().__init__(name=name, data_type=data_type)
+        super().__init__(name=name, data_type=data_type, type=type)
 
 
 class CustomTrigger(Trigger):
-    binding_name: str = ""
 
     @staticmethod
     def get_binding_name() -> str:
-        return CustomTrigger.binding_name
+        pass
 
     def __init__(self,
                  name: str,
                  type: str,
                  data_type: Optional[DataType] = None,
                  **kwargs):
-        self.type = type
-        CustomTrigger.binding_name = type
-        super().__init__(name=name, data_type=data_type)
+        super().__init__(name=name, data_type=data_type, type=type)

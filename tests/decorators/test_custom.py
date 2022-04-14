@@ -18,7 +18,8 @@ class TestCustom(unittest.TestCase):
                                 methods=["GET", "POST"],
                                 route="dummy")
 
-        self.assertEqual(trigger.get_binding_name(), HTTP_TRIGGER)
+        self.assertEqual(trigger.get_binding_name(), None)
+        self.assertEqual(trigger.type, HTTP_TRIGGER)
         self.assertEqual(trigger.get_dict_repr(), {
             "authLevel": AuthLevel.ANONYMOUS,
             "type": HTTP_TRIGGER,
@@ -39,7 +40,7 @@ class TestCustom(unittest.TestCase):
             id='dummy_id',
             partitionKey='dummy_partitions',
             sqlQuery='dummy_query')
-        self.assertEqual(cosmosdb_input.get_binding_name(), COSMOS_DB)
+        self.assertEqual(cosmosdb_input.get_binding_name(), None)
         self.assertEqual(cosmosdb_input.get_dict_repr(),
                          {'collectionName': 'dummy_collection',
                           'connectionStringSetting': 'dummy_str',
@@ -57,7 +58,7 @@ class TestCustom(unittest.TestCase):
                                           path="dummy_path",
                                           connection="dummy_connection")
 
-        self.assertEqual(blob_output.get_binding_name(), BLOB)
+        self.assertEqual(blob_output.get_binding_name(), None)
         self.assertEqual(blob_output.get_dict_repr(), {
             "type": BLOB,
             "direction": BindingDirection.OUT,
